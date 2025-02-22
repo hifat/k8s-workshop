@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tasky-env-config
+data:
+  .env: |
+    APP_PORT=8000
+    DB_HOST=192.168.1.9
+    DB_USERNAME=root
+    DB_PASSWORD=123456
+    DB_PORT=27017
+    DB_NAME=tasky_db
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: client-pods
+  labels:
+    app: client
+spec:
+  # Add hostNetwork for external DB access
+  # hostNetwork: true
+  # Add DNS config
+  # dnsPolicy: ClusterFirstWithHostNet
+  containers:
+    - name: client
+      image: butternoei008/tasky-api:latest
+      ports:
+        - containerPort: 8000
+          name: http
+      volumeMounts:
+        - name: env-config
+          mountPath: /.env
+          subPath: .env
+  volumes:
+    - name: env-config
+      configMap:
+        name: tasky-env-config
+# ... Previous ConfigMap and Pod configuration ...
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-service
+spec:
+  type: NodePort # or LoadBalancer if you're on cloud
+  selector:
+    app: client
+  ports:
+    - port: 80
+      targetPort: 8000
+      nodePort: 30000 # Optional: specify port between 30000-32767
