@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      name: client-pods
+      labels:
+        app: client
+    spec:
+      containers:
+        - name: client
+          image: butternoei008/tasky-api:latest
+          volumeMounts:
+            - name: env-config
+              mountPath: /.env
+              subPath: .env
+      volumes:
+        - name: env-config
+          configMap:
+            name: tasky-env-config
